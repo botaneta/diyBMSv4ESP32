@@ -768,6 +768,18 @@ esp_err_t post_setsoc_json_handler(httpd_req_t *req, bool urlEncoded)
     return SendFailure(req);
 }
 
+esp_err_t post_setBattCyclesCount_json_handler(httpd_req_t *req, bool urlEncoded)
+{
+    uint32_t cyclesBatt=0;
+    if (GetKeyValue(httpbuf, "setBattCyclesCount", &cyclesBatt, urlEncoded))
+    {
+        mysettings.numberofbatterycycles=cyclesBatt * 1000;
+        saveConfiguration();
+        return SendSuccess(req);
+    }
+    return SendFailure(req);
+}
+
 esp_err_t post_resetdailyahcount_json_handler(httpd_req_t *req, bool)
 {
     if (CurrentMonitorResetDailyAmpHourCounters())
@@ -785,20 +797,26 @@ esp_err_t post_savecmbasic_json_handler(httpd_req_t *req, bool urlEncoded)
         uint16_t shuntmv = 0;
         if (GetKeyValue(httpbuf, "shuntmv", &shuntmv, urlEncoded))
         {
-            uint16_t batterycapacity = 0;
-            if (GetKeyValue(httpbuf, "cmbatterycapacity", &batterycapacity, urlEncoded))
+            //BOTANETA save parameter voltage divider vbus
+            mysettings.currentMonitoring_voltage_divider_vbus=1.0f;
+            if(GetKeyValue(httpbuf, "cm_voltage_divider_vbus", &mysettings.currentMonitoring_voltage_divider_vbus, urlEncoded))
             {
-                float fullchargevolt = 0;
-                if (GetKeyValue(httpbuf, "cmfullchargevolt", &fullchargevolt, urlEncoded))
+                uint16_t batterycapacity = 0;
+                if (GetKeyValue(httpbuf, "cmbatterycapacity", &batterycapacity, urlEncoded))
                 {
-                    float tailcurrent = 0;
-                    if (GetKeyValue(httpbuf, "cmtailcurrent", &tailcurrent, urlEncoded))
+                    float fullchargevolt = 0;
+                    if (GetKeyValue(httpbuf, "cmfullchargevolt", &fullchargevolt, urlEncoded))
                     {
-                        float chargeefficiency = 0;
-                        if (GetKeyValue(httpbuf, "cmchargeefficiency", &chargeefficiency, urlEncoded))
+                        float tailcurrent = 0;
+                        if (GetKeyValue(httpbuf, "cmtailcurrent", &tailcurrent, urlEncoded))
                         {
-                            CurrentMonitorSetBasicSettings(shuntmv, shuntmaxcur, batterycapacity, fullchargevolt, tailcurrent, chargeefficiency);
-                            return SendSuccess(req);
+                            float chargeefficiency = 0;
+                            if (GetKeyValue(httpbuf, "cmchargeefficiency", &chargeefficiency, urlEncoded))
+                            {
+                                CurrentMonitorSetBasicSettings(shuntmv, shuntmaxcur, batterycapacity, fullchargevolt, tailcurrent, chargeefficiency);
+                                SaveConfiguration(&mysettings);
+                                return SendSuccess(req);
+                            }
                         }
                     }
                 }
@@ -1206,7 +1224,7 @@ esp_err_t save_data_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    std::array<std::string, 30> uri_array = {
+    std::array<std::string, 31> uri_array = {
         "savebankconfig", "saventp", "saveglobalsetting",
         "savemqtt", "saveinfluxdb",
         "saveconfigtofile", "wificonfigtofile",
@@ -1217,9 +1235,9 @@ esp_err_t save_data_handler(httpd_req_t *req)
         "savecurrentmon", "savecmbasic", "savecmadvanced",
         "savecmrelay", "restoreconfig", "savechargeconfig",
         "visibletiles", "dailyahreset", "setsoc",
-        "savenetconfig", "newhaapikey"};
+        "savenetconfig", "newhaapikey", "setBattCyclesCount"};
 
-    std::array<std::function<esp_err_t(httpd_req_t * req, bool urlEncoded)>, 30> func_ptr = {
+    std::array<std::function<esp_err_t(httpd_req_t * req, bool urlEncoded)>, 31> func_ptr = {
         post_savebankconfig_json_handler, post_saventp_json_handler, post_saveglobalsetting_json_handler,
         post_savemqtt_json_handler, post_saveinfluxdbsetting_json_handler,
         post_saveconfigurationtoflash_json_handler, post_savewificonfigtosdcard_json_handler,
@@ -1230,7 +1248,7 @@ esp_err_t save_data_handler(httpd_req_t *req)
         post_savecurrentmon_json_handler, post_savecmbasic_json_handler, post_savecmadvanced_json_handler,
         post_savecmrelay_json_handler, post_restoreconfig_json_handler, post_savechargeconfig_json_handler,
         post_visibletiles_json_handler, post_resetdailyahcount_json_handler, post_setsoc_json_handler,
-        post_savenetconfig_json_handler, post_homeassistant_apikey_json_handler};
+        post_savenetconfig_json_handler, post_homeassistant_apikey_json_handler, post_setBattCyclesCount_json_handler};
 
     auto name = std::string(req->uri);
 

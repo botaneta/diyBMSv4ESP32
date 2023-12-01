@@ -9,6 +9,7 @@
 #include "PacketReceiveProcessor.h"
 
 #include <mqtt_client.h>
+#define MQTT_SUSCRIBE_TOPIC "setparameter"
 
 void stopMqtt();
 void connectToMqtt();
@@ -21,6 +22,7 @@ void mqtt1(const currentmonitoring_struct *currentMonitor,const Rules *rules);
 void GeneralStatusPayload(const PacketRequestGenerator *prg, const PacketReceiveProcessor *receiveProc, uint16_t requestq_count,const Rules *rules);
 void BankLevelInformation(const Rules *rules);
 void RuleStatus(const Rules *rules);
+
 
 extern uint8_t TotalNumberOfCells();
 extern diybms_eeprom_settings mysettings;

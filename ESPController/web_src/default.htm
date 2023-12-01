@@ -218,6 +218,11 @@
         <span class="x v"></span>
       </div>
 
+      <div id="cyclesbatt" class="stat">
+        <span class="x t">Cycles of Battery</span>
+        <span class="x v"></span>
+      </div>
+
       <div id="time100" class="stat">
         <span class="x t">Time to 100%%:</span>
         <span class="x v"></span>
@@ -372,7 +377,7 @@
             <th id="mpbypass" class="hide">Bypass PWM &percnt;</th>
             <th id="mpbpc" class="hide">Bad packet count</th>
             <th id="mppktr" class="hide">Packets received</th>
-            <th id="mpbal" class="hide">Balance statistics</th>
+            <th id="mpbal" class="hide">Balance energy used (mAh)</th>
             <th></th>
           </tr>
         </thead>
@@ -931,6 +936,16 @@
                 <td class="relayset"></td>
               </tr>
               <tr>
+                <td><label for="rule16value">CAN communication error</label></td>
+                <td>
+                  <input type="hidden" name="rule16value" id="rule16value" value="0" class="rule" />
+                </td>
+                <td>
+                  <input type="hidden" name="rule16hyst" id="rule16hyst" value="0" class="rule" />
+                </td>
+                <td class="relayset"></td>
+              </tr>
+              <tr>
                 <td><label for="defaultvalue">Relay default</label></td>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
@@ -1306,6 +1321,11 @@
           </div>
 
           <div>
+            <label for="cm_voltage_divider_vbus">Voltage divider Vbus</label>
+            <input type="number" name="cm_voltage_divider_vbus" value="" id="cm_voltage_divider_vbus" min="1.0" max="4.0" step="0.001"/>
+          </div>
+
+          <div>
             <label for="cmbatterycapacity">Battery capacity (Ah)</label>
             <input id="cmbatterycapacity" name="cmbatterycapacity" value="" type="number" min="1" max="65535"
               step="1" />
@@ -1529,6 +1549,17 @@
           <div>
             <label for="setsoc">Set State Of Charge &percnt;</label>
             <input id="setsoc" name="setsoc" value="" type="number" min="1" max="100" step="0.1" value="75.0" />
+          </div>
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+
+      <h2>Set cycles of battery counter</h2>
+      <form id="setBattCyclesCountForm" method="POST" action="/post/setBattCyclesCount" autocomplete="off">
+        <div class="settings">
+          <div>
+            <label for="setBattCyclesCount">Set counter</label>
+            <input id="setBattCyclesCount" name="setBattCyclesCount" value="" type="number" min="0" max="6000" step="1">
           </div>
           <button type="submit">Submit</button>
         </div>

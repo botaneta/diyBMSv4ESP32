@@ -8,7 +8,7 @@
 // Needs to match the ordering on the HTML screen
 // You also need to update "RuleTextDescription" (Rules.cpp)
 // Define a max constant for the highest value (change if you add more rules)
-#define MAXIMUM_RuleNumber 15
+#define MAXIMUM_RuleNumber 16
 enum Rule : uint8_t
 {
     EmergencyStop = 0,
@@ -26,7 +26,8 @@ enum Rule : uint8_t
     BankUnderVoltage = 12,
     BankRange = 13,
     Timer2 = 14,
-    Timer1 = 15
+    Timer1 = 15,
+    CANcomError =16
 };
 
 // Define a max constant for the highest value (change if you add more warnings)

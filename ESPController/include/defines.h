@@ -113,7 +113,7 @@ enum CurrentMonitorDevice : uint8_t
 
 // Number of rules as defined in Rules.h (enum Rule)
 // This value is 1 + MAXIMUM_RuleNumber
-#define RELAY_RULES 16
+#define RELAY_RULES 17  //BOTANETA old value 16
 
 // Number of relays on board (4)
 #define RELAY_TOTAL 4
@@ -161,6 +161,7 @@ struct diybms_eeprom_settings
 
   uint16_t currentMonitoring_shuntmv;
   uint16_t currentMonitoring_shuntmaxcur;
+  float    currentMonitoring_voltage_divider_vbus;
   uint16_t currentMonitoring_batterycapacity;
   uint16_t currentMonitoring_fullchargevolt;
   uint16_t currentMonitoring_tailcurrent;
@@ -231,6 +232,8 @@ struct diybms_eeprom_settings
   uint16_t floatvoltagetimer;
   // Once battery discharges below this value, resume normal charging operation
   uint8_t stateofchargeresumevalue;
+//number of cycles charge-discharge 100% battery capacity Scale 0.001 cycles
+  uint32_t numberofbatterycycles;
 
   // NOTE this array is subject to buffer overflow vulnerabilities!
   bool mqtt_enabled;

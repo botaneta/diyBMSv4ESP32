@@ -61,6 +61,7 @@ esp_err_t post_savers485settings_json_handler(httpd_req_t *req, bool urlEncoded)
 esp_err_t post_savechargeconfig_json_handler(httpd_req_t *req, bool urlEncoded);
 esp_err_t post_savecmrelay_json_handler(httpd_req_t *req, bool urlEncoded);
 esp_err_t post_setsoc_json_handler(httpd_req_t *req, bool urlEncoded);
+esp_err_t post_setBattCyclesCount_json_handler(httpd_req_t *req, bool urlEncoded);
 esp_err_t post_resetdailyahcount_json_handler(httpd_req_t *req, bool);
 esp_err_t post_savecmbasic_json_handler(httpd_req_t *req, bool urlEncoded);
 esp_err_t post_savecmadvanced_json_handler(httpd_req_t *req, bool urlEncoded);

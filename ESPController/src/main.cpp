@@ -125,6 +125,7 @@ uint8_t TotalNumberOfCells() { return mysettings.totalNumberOfBanks * mysettings
 
 uint32_t canbus_messages_received = 0;
 uint32_t canbus_messages_received_error = 0;
+uint32_t canbus_no_request_messages_count=0; //BOTANETA counter for  inverter no request
 uint32_t canbus_messages_sent = 0;
 uint32_t canbus_messages_failed_sent = 0;
 int64_t canbus_last_305_message_time = 0;
@@ -1195,6 +1196,13 @@ void ProcessRules()
     }
   }
 
+  //BOTANETA control comunicación con el inversor
+  if(canbus_no_request_messages_count > 0){
+    rules.setRuleStatus(Rule::CANcomError, true);
+  }else{
+    rules.setRuleStatus(Rule::CANcomError, false);
+  }
+
   rules.highestBankRange = 0;
   rules.numberOfBalancingModules = 0;
   uint8_t cellid = 0;
@@ -1880,6 +1888,15 @@ uint16_t calculateCRC(const uint8_t *f, uint8_t bufferSize)
   }
 
   return temp;
+/*
+  // Reverse byte order.
+  uint16_t temp2 = temp >> 8;
+  temp = (temp << 8) | temp2;
+  temp &= 0xFFFF;
+  // the returned value is already swapped
+  // crcLo byte is first & crcHi byte is last
+  return temp;
+  */
 }
 
 uint8_t SetMobusRegistersFromFloat(uint8_t *cmd, uint8_t ptr, float value)
@@ -2116,6 +2133,8 @@ bool CurrentMonitorResetDailyAmpHourCounters()
     }
     if (mysettings.currentMonitoringDevice == CurrentMonitorDevice::DIYBMS_CURRENT_MON_INTERNAL)
     {
+      mysettings.numberofbatterycycles += currentmon_internal.calc_daily_milliamphour_out() / mysettings.currentMonitoring_batterycapacity;
+      saveConfiguration();
       currentmon_internal.ResetDailyAmpHourCounters();
       return true;
     }
@@ -2618,7 +2637,8 @@ void ProcessDIYBMSCurrentMonitorInternal()
   currentMonitor.modbus.modelnumber = 0x229;
   currentMonitor.modbus.power = currentmon_internal.calc_power();
   currentMonitor.modbus.overpowerlimit = currentmon_internal.calc_overpowerlimit();
-  currentMonitor.modbus.voltage = currentmon_internal.calc_voltage();
+  //BOTANETA apply voltage divider
+  currentMonitor.modbus.voltage = currentmon_internal.calc_voltage() * mysettings.currentMonitoring_voltage_divider_vbus;
   currentMonitor.modbus.current = currentmon_internal.calc_current();
   currentMonitor.modbus.shuntresistance = currentmon_internal.calc_shuntresistance();
   currentMonitor.modbus.tailcurrentamps = currentmon_internal.calc_tailcurrentamps();
@@ -2660,7 +2680,9 @@ void _send_canbus_message(const uint32_t identifier, const uint8_t *buffer, cons
 {
   twai_message_t message;
   message.identifier = identifier;
-  message.flags = flags;
+  message.flags = flags; //BOTANETA que usar flags o id_can?
+  message.flags = TWAI_MSG_FLAG_NONE;
+  if(identifier > 0x7FF)message.flags = TWAI_MSG_FLAG_EXTD;
   message.data_length_code = length;
 
   memcpy(&message.data, buffer, length);
@@ -2672,7 +2694,7 @@ void _send_canbus_message(const uint32_t identifier, const uint8_t *buffer, cons
   if (result == ESP_OK)
   {
     // Everything normal/good
-    // ESP_LOGD(TAG, "Sent CAN message 0x%x", identifier);
+    ESP_LOGD(TAG, "Sent CAN message 0x%x", identifier);
     // ESP_LOG_BUFFER_HEX_LEVEL(TAG, &message, sizeof(twai_message_t), esp_log_level_t::ESP_LOG_DEBUG);
     canbus_messages_sent++;
     return;
@@ -2712,6 +2734,8 @@ void _send_canbus_message(const uint32_t identifier, const uint8_t *buffer, cons
   }
 }
 
+
+//BOTANETA hacer algo aquí
 void send_canbus_message(const uint32_t identifier, const uint8_t *buffer, const uint8_t length)
 {
   _send_canbus_message(identifier, buffer, length, TWAI_MSG_FLAG_NONE);
@@ -2767,11 +2791,8 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
       // Delay a little whilst sending packets to give ESP32 some breathing room and not flood the CANBUS
       // vTaskDelay(pdMS_TO_TICKS(100));
     }
-    else if (mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONFORCEH2 )
-    {
-      pylonforce_handle_tx();
-    }
-    else if (mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_VICTRON)
+    
+    if (mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_VICTRON)
     {
       // minimum CAN-IDs required for the core functionality are 0x351, 0x355, 0x356 and 0x35A.
 
@@ -2802,6 +2823,14 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
         victron_message_374_375_376_377();
       }
     }
+
+    if(mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONTECH_HV){
+      // Delay 1 second
+      // wait to query Inverter on task canbus_rx
+      vTaskDelay(pdMS_TO_TICKS(5000));  //2seg
+      //pylonHV_send_message_status(false); //BOTANETA debug,  delete line for production
+
+    }
   }
 }
 
@@ -2813,6 +2842,7 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
     {
       // Canbus is disbled, sleep until this changes....
       vTaskDelay(pdMS_TO_TICKS(2000));
+      canbus_no_request_messages_count=0; //BOTANETA no-CAN
     }
 
     // Wait for message to be received, up to 20 seconds
@@ -2823,24 +2853,51 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
       canbus_messages_received++;
       ESP_LOGD(TAG, "CANBUS received message ID: %0x, DLC: %d, flags: %0x",
                message.identifier, message.data_length_code, message.flags);
-      if (!(message.flags & TWAI_MSG_FLAG_RTR))   // we do not answer to Remote-Transmission-Requests
+
+      //BOTANETA debug message can         
+      uint8_t data[8];
+      for(uint8_t i=0; i <message.data_length_code; i++){
+        data[i]=message.data[i];
+      }
+      ESP_LOGD(TAG, "CANBUS received message ID:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+                  message.identifier, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );         
+      
+      /*
+      if (!(message.flags & TWAI_MSG_FLAG_RTR))
       {
-//        ESP_LOG_BUFFER_HEXDUMP(TAG, message.data, message.data_length_code, ESP_LOG_DEBUG);
-        if (mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONFORCEH2 )
-        {
-          pylonforce_handle_rx(&message);
-        }
-        else
-        {
+        ESP_LOG_BUFFER_HEXDUMP(TAG, message.data, message.data_length_code, ESP_LOG_DEBUG);
+      }*/
+
           // Remote inverter should send a 305 message every few seconds
           // for now, keep track of last message.
           // TODO: in future, add timeout/error condition to shut down
           if (message.identifier == 0x305)
           {
             canbus_last_305_message_time = esp_timer_get_time();
-          }
-        }
+          canbus_no_request_messages_count=0; //BOTANETA pylon_lv
       }
+
+      //BOTANETA: wait request from inverter
+      if(mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONTECH_HV){
+        switch(message.identifier){
+          case 0x8200:
+          case 0x620: //Command control
+            
+          break;
+          case 0x4200:
+          case 0x420: //request from inverter
+            {
+              canbus_no_request_messages_count=0;  //BOTANETA reset count
+              bool extd=message.extd;
+              if(message.data[0]==0x00); pylonHV_send_message_info(extd);//send status info
+              if(message.data[0]==0x02); pylonHV_send_message_status(extd);//send hardware info
+            }
+          break;
+        }
+
+      }//end canbus_pylontech_hv
+
+
     }
     else
     {
@@ -2848,6 +2905,8 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
       ESP_LOGE(TAG, "CANBUS error %s", esp_err_to_name(res));
       canbus_messages_received_error++;
       ESP_LOGI(TAG, "CANBUS error count %u", canbus_messages_received_error);
+      canbus_no_request_messages_count++; //BOTANETA no request inverter, timeout
+      
     }
   }
 }

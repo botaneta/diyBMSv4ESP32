@@ -70,6 +70,7 @@ static const char current_value2_JSONKEY[] = "cur_val2";
 static const char currentMonitoringDevice_JSONKEY[] = "currentMonitoringDevice";
 static const char currentMonitoring_shuntmv_JSONKEY[] = "currentMonitoringShuntmv";
 static const char currentMonitoring_shuntmaxcur_JSONKEY[] = "currentMonitoringShuntMaxCur";
+static const char currentMonitoring_voltage_divider_vbus_JSONKEY[]="currentMonitoringVoltageDividerVbus"; //BOTANETA jsonkey
 static const char currentMonitoring_batterycapacity_JSONKEY[] = "currentMonitoringBatteryCap";
 static const char currentMonitoring_fullchargevolt_JSONKEY[] = "currentMonitoringFullChargeVolt";
 static const char currentMonitoring_tailcurrent_JSONKEY[] = "currentMonitoringTailCurrent";
@@ -90,6 +91,8 @@ static const char floatvoltage_JSONKEY[] = "floatvoltage";
 static const char floatvoltagetimer_JSONKEY[] = "floatvoltagetimer";
 static const char stateofchargeresumevalue_JSONKEY[] = "stateofchargeresumevalue";
 static const char homeassist_apikey_JSONKEY[] = "homeassistapikey";
+static const char stateofhealdresumevalue_JSONKEY[] = "stateodhealdresumevalue";
+static const char numberofbatterycycles_JSONKEY[] = "numberofbatterycycles"; 
 
 /* NVS KEYS
 THESE STRINGS ARE USED TO HOLD THE PARAMETER IN NVS FLASH, MAXIMUM LENGTH OF 16 CHARACTERS
@@ -163,6 +166,7 @@ static const char influxdb_orgid_NVSKEY[] = "inf_orgid";
 
 static const char currentMonitoring_shuntmv_NVSKEY[] = "curMonshuntmv";
 static const char currentMonitoring_shuntmaxcur_NVSKEY[] = "curMonShtMaxCur";
+static const char currentMonitoring_voltage_divider_vbus_NVSKEY[] = "curMonDivVbus";
 static const char currentMonitoring_batterycapacity_NVSKEY[] = "curMonBatCap";
 static const char currentMonitoring_fullchargevolt_NVSKEY[] = "curMonFullChgV";
 static const char currentMonitoring_tailcurrent_NVSKEY[] = "curMonTailCur";
@@ -182,11 +186,13 @@ static const char floatvoltage_NVSKEY[] = "floatV";
 static const char floatvoltagetimer_NVSKEY[] = "floatVtimer";
 static const char stateofchargeresumevalue_NVSKEY[] = "socresume";
 static const char homeassist_apikey_NVSKEY[] = "haapikey";
+static const char numberofbatterycycles_NVSKEY[] = "cyclesBatt";
 
 #define MACRO_NVSWRITE(VARNAME) writeSetting(nvs_handle, VARNAME##_NVSKEY, settings->VARNAME);
 #define MACRO_NVSWRITE_UINT8(VARNAME) writeSetting(nvs_handle, VARNAME##_NVSKEY, (uint8_t)settings->VARNAME);
 #define MACRO_NVSWRITESTRING(VARNAME) writeSetting(nvs_handle, VARNAME##_NVSKEY, &settings->VARNAME[0]);
 #define MACRO_NVSWRITEBLOB(VARNAME) writeSettingBlob(nvs_handle, VARNAME##_NVSKEY, settings->VARNAME, sizeof(settings->VARNAME));
+#define MACRO_NVSWRITEFLOAT(VARNAME) writeSettingFloat(nvs_handle, VARNAME##_NVSKEY, &settings->VARNAME);
 
 // Macros to read NVS keys into variables
 #define MACRO_NVSREAD(VARNAME) getSetting(nvs_handle, VARNAME##_NVSKEY, &settings->VARNAME);
@@ -315,6 +321,16 @@ void writeSetting(nvs_handle_t handle, const char *key, int32_t value)
     ESP_LOGD(TAG, "Writing (%s)=%i", key, value);
     ESP_ERROR_CHECK(nvs_set_i32(handle, key, value));
 }
+void writeSetting(nvs_handle_t handle, const char *key, uint32_t value)
+{
+    ESP_LOGD(TAG, "Writing (%s)=%i", key, value);
+    ESP_ERROR_CHECK(nvs_set_u32(handle, key, value));
+}
+void writeSettingFloat(nvs_handle_t handle, const char *key, float *value)// BOTANETA save setting value
+{
+    ESP_LOGD(TAG, "Writing (%s)=%.4f", key, value);
+    ESP_ERROR_CHECK(nvs_set_blob(handle, key, value, sizeof(float)));
+}
 void writeSetting(nvs_handle_t handle, const char *key, uint16_t value)
 {
     ESP_LOGD(TAG, "Writing (%s)=%u", key, value);
@@ -374,12 +390,11 @@ void SaveConfiguration(diybms_eeprom_settings *settings)
         MACRO_NVSWRITE_UINT8(rs485parity);
         MACRO_NVSWRITE_UINT8(rs485stopbits);
         MACRO_NVSWRITE_UINT8(canbusprotocol);
-        MACRO_NVSWRITE(canbusinverter);
-        MACRO_NVSWRITE(canbusbaud);
-        MACRO_NVSWRITE_UINT8(canbus_equipment_addr);
+        MACRO_NVSWRITE_UINT8(canbusinverter);
 
         MACRO_NVSWRITE(currentMonitoring_shuntmv);
         MACRO_NVSWRITE(currentMonitoring_shuntmaxcur);
+        MACRO_NVSWRITEFLOAT(currentMonitoring_voltage_divider_vbus); //BOTANETA save setting
         MACRO_NVSWRITE(currentMonitoring_batterycapacity);
         MACRO_NVSWRITE(currentMonitoring_fullchargevolt);
         MACRO_NVSWRITE(currentMonitoring_tailcurrent);
@@ -441,6 +456,7 @@ void SaveConfiguration(diybms_eeprom_settings *settings)
         MACRO_NVSWRITE(stateofchargeresumevalue);
 
         MACRO_NVSWRITESTRING(homeassist_apikey);
+        MACRO_NVSWRITE(numberofbatterycycles);
 
         ESP_ERROR_CHECK(nvs_commit(nvs_handle));
         nvs_close(nvs_handle);
@@ -500,6 +516,7 @@ void LoadConfiguration(diybms_eeprom_settings *settings)
 
         MACRO_NVSREAD(currentMonitoring_shuntmv);
         MACRO_NVSREAD(currentMonitoring_shuntmaxcur);
+        MACRO_NVSREAD(currentMonitoring_voltage_divider_vbus); //BOTANETA load value
         MACRO_NVSREAD(currentMonitoring_batterycapacity);
         MACRO_NVSREAD(currentMonitoring_fullchargevolt);
         MACRO_NVSREAD(currentMonitoring_tailcurrent);
@@ -570,6 +587,7 @@ void LoadConfiguration(diybms_eeprom_settings *settings)
         MACRO_NVSREAD_UINT8(stateofchargeresumevalue);
 
         MACRO_NVSREADSTRING(homeassist_apikey);
+        MACRO_NVSREAD(numberofbatterycycles);
 
         nvs_close(nvs_handle);
     }
@@ -642,6 +660,7 @@ void DefaultConfiguration(diybms_eeprom_settings *_myset)
 
     _myset->currentMonitoring_shuntmv = 50;
     _myset->currentMonitoring_shuntmaxcur = 150;
+    _myset->currentMonitoring_voltage_divider_vbus = 1.0f; //BOTANETA default value
     _myset->currentMonitoring_batterycapacity = 280;
     _myset->currentMonitoring_fullchargevolt = 5600;   // 56.00V
     _myset->currentMonitoring_tailcurrent = 1400;      // 14.00A
@@ -753,6 +772,8 @@ void DefaultConfiguration(diybms_eeprom_settings *_myset)
     _myset->floatvoltagetimer = 6 * 60;
     // Once battery SoC drops below this value, resume normal charging operation
     _myset->stateofchargeresumevalue = 96;
+
+    _myset->numberofbatterycycles = 0;
 }
 
 /// @brief Save WIFI settings into FLASH NVS
@@ -994,6 +1015,7 @@ void GenerateSettingsJSONDocument(DynamicJsonDocument *doc, diybms_eeprom_settin
     root[currentMonitoringDevice_JSONKEY] = (uint8_t)settings->currentMonitoringDevice;
     root[currentMonitoring_shuntmv_JSONKEY] = settings->currentMonitoring_shuntmv;
     root[currentMonitoring_shuntmaxcur_JSONKEY] = settings->currentMonitoring_shuntmaxcur;
+    root[currentMonitoring_voltage_divider_vbus_JSONKEY] = settings->currentMonitoring_voltage_divider_vbus; //BOTANETA save  json value
     root[currentMonitoring_batterycapacity_JSONKEY] = settings->currentMonitoring_batterycapacity;
     root[currentMonitoring_fullchargevolt_JSONKEY] = settings->currentMonitoring_fullchargevolt;
     root[currentMonitoring_tailcurrent_JSONKEY] = settings->currentMonitoring_tailcurrent;
@@ -1153,6 +1175,7 @@ void JSONToSettings(DynamicJsonDocument &doc, diybms_eeprom_settings *settings)
     settings->currentMonitoringDevice = (CurrentMonitorDevice)(uint8_t)root[currentMonitoringDevice_JSONKEY];
     settings->currentMonitoring_shuntmv = root[currentMonitoring_shuntmv_JSONKEY];
     settings->currentMonitoring_shuntmaxcur = root[currentMonitoring_shuntmaxcur_JSONKEY];
+    settings->currentMonitoring_voltage_divider_vbus = root[currentMonitoring_voltage_divider_vbus_JSONKEY]; //BOTANETA load json value
     settings->currentMonitoring_batterycapacity = root[currentMonitoring_batterycapacity_JSONKEY];
     settings->currentMonitoring_fullchargevolt = root[currentMonitoring_fullchargevolt_JSONKEY];
     settings->currentMonitoring_tailcurrent = root[currentMonitoring_tailcurrent_JSONKEY];

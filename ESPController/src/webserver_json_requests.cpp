@@ -65,14 +65,17 @@ esp_err_t content_handler_currentmonitor(httpd_req_t *req)
   bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, "{");
   bufferused += printBoolean(&httpbuf[bufferused], BUFSIZE - bufferused, "enabled", mysettings.currentMonitoringEnabled);
 
-  bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused,
-                         R"("address":%u,"devicetype":%u,"timestampage":%u,"valid":%s,"batterycapacity":%u,"tailcurrent":%.4f,"fullchargevolt":%.4f,"chargeefficiency":%.4f,)",
+  bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused,                    //--BOTANETA tag--
+                         R"("address":%u,"devicetype":%u,"timestampage":%u,"valid":%s,"voltage_divider_vbus":%.4f,"batterycapacity":%u,"tailcurrent":%.4f,"fullchargevolt":%.4f,"chargeefficiency":%.4f,)",
                          mysettings.currentMonitoringModBusAddress,
                          mysettings.currentMonitoringDevice,
                          timestampage,
                          currentMonitor.validReadings ? "true" : "false",
-                         currentMonitor.modbus.batterycapacityamphour, currentMonitor.modbus.tailcurrentamps,
-                         currentMonitor.modbus.fullychargedvoltage, currentMonitor.chargeefficiency);
+                         mysettings.currentMonitoring_voltage_divider_vbus, //BOTANETA parameter
+                         currentMonitor.modbus.batterycapacityamphour, 
+                         currentMonitor.modbus.tailcurrentamps,
+                         currentMonitor.modbus.fullychargedvoltage, 
+                         currentMonitor.chargeefficiency);
 
   bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused,
                          R"("voltage":%.4f,"current":%.4f,"mahout":%u,"mahin":%u,"temperature":%i,"watchdog":%u,"power":%.4f,"resistance":%.4f,"calibration":%u,"templimit":%i,"undervlimit":%.4f,"overvlimit":%.4f,"overclimit":%.4f,"underclimit":%.4f,"overplimit":%.4f,"tempcoeff":%u,"model":%u,"firmwarev":%u,"firmwaredate":%u,)",
@@ -1003,6 +1006,8 @@ esp_err_t content_handler_monitor2(httpd_req_t *req)
                            currentMonitor.modbus.daily_milliamphour_out, currentMonitor.modbus.daily_milliamphour_in);
 
     bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, R"(,"time100":%u,"time20":%u,"time10":%u)", time100, time20, time10);
+
+    bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, R"(,"cyclesbatt":%u)", (mysettings.numberofbatterycycles/1000) );
 
     bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, "}");
   }

@@ -418,35 +418,51 @@ bool Rules::SharedChargingDischargingRules(const diybms_eeprom_settings *mysetti
     if (mysettings->canbusprotocol == CanBusProtocolEmulation::CANBUS_DISABLED)
         return false;
 
-    if (invalidModuleCount > 0)
+    if (invalidModuleCount > 0){
+        ESP_LOGW("TEST_SHARED_DISC_CHARG", "Invalid module conunt");  //BOTANETA
         return false;
-    if (moduleHasExternalTempSensor == false)
+    }
+    if (moduleHasExternalTempSensor == false){
+        ESP_LOGW("TEST_SHARED_DISC_CHARG", "Module external temp sensor"); //BOTANETA
         return false;
+    }
     // Any errors, stop charge
-    if (numberOfActiveErrors > 0)
+    if (numberOfActiveErrors > 0){ 
+        ESP_LOGW("TEST_SHARED_DISC_CHARG", "Numero de active errors"); //BOTANETA
         return false;
+    }
+        
 
     // Battery high temperature alarm
-    if (ruleOutcome(Rule::ModuleOverTemperatureExternal))
+    if (ruleOutcome(Rule::ModuleOverTemperatureExternal)){
+        ESP_LOGW("TEST_SHARED_DISC_CHARG", "Module over temp external"); //BOTANEA
         return false;
+    }
     // Battery low temperature alarm
-    if (ruleOutcome(Rule::ModuleUnderTemperatureExternal))
+    if (ruleOutcome(Rule::ModuleUnderTemperatureExternal)){
+        ESP_LOGW("TEST_SHARED_DISC_CHARG", "Module under temp external"); //BOTANETA
         return false;
+    }
 
     return true;
 }
+
 bool Rules::IsChargeAllowed(const diybms_eeprom_settings *mysettings)
 {
     if (SharedChargingDischargingRules(mysettings) == false)
         return false;
 
     // Battery high voltage alarm - stop charging
-    if (ruleOutcome(Rule::BankOverVoltage))
+    if (ruleOutcome(Rule::BankOverVoltage)){
+        ESP_LOGW("RULES::IS_CHARGE_ALLOWED", " Battery hig voltage" ); //BOTANETA
         return false;
+    }
 
     // Battery high voltage alarm - stop charging
-    if (ruleOutcome(Rule::CurrentMonitorOverVoltage))
+    if (ruleOutcome(Rule::CurrentMonitorOverVoltage)){
+        ESP_LOGW("RULES::IS_CHARGE_ALLOWED", " Battery high voltage" ); //BOTANETA
         return false;
+    }
 
     if (mysettings->preventcharging == true)
         return false;
@@ -454,24 +470,32 @@ bool Rules::IsChargeAllowed(const diybms_eeprom_settings *mysettings)
     if ((lowestExternalTemp < mysettings->chargetemplow) || (highestExternalTemp > mysettings->chargetemphigh))
     {
         // Stop charge - temperature out of range
-        // ESP_LOGW(TAG, "Stop charge - temperature out of range");
+        //ESP_LOGW(TAG, "Stop charge - temperature out of range");
+        ESP_LOGW("RULES::IS_CHARGE_ALLOWED", "Stop charge - temperature out of range"); //BOTANETA
         return false;
     }
 
     // chargevolt = 560
-    if ((highestBankVoltage / 100) > mysettings->chargevolt)
+    if ((highestBankVoltage / 100) > mysettings->chargevolt){
+        ESP_LOGW("RULES::IS_CHARGE_ALLOWED", " Battery high voltage > mysetting ChargeVolt" ); //BOTANETA
         return false;
+    }
 
     // Individual cell over voltage
-    if (highestCellVoltage > mysettings->cellmaxmv)
+    if (highestCellVoltage > mysettings->cellmaxmv){
+        ESP_LOGW("RULES::IS_CHARGE_ALLOWED", " cell over voltage  %dVcell > %dVcell_limit", highestCellVoltage, mysettings->cellmaxmv ); //BOTANETA
         return false;
+    }
 
     // Prevent charging if we stopped it (after float/absorb)
-    if (chargemode == ChargingMode::stopped)
+    if (chargemode == ChargingMode::stopped){
+        ESP_LOGW("RULES::IS_CHARGE_ALLOWED", " Charge mode STOP" ); //BOTANETA
         return false;
+    }
 
     return true;
 }
+
 bool Rules::IsDischargeAllowed(const diybms_eeprom_settings *mysettings)
 {
     if (SharedChargingDischargingRules(mysettings) == false)
