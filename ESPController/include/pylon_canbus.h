@@ -13,8 +13,6 @@ void pylon_message_359();
 void pylon_message_35c();
 
 
-
-const uint8_t DEFAULT_DEVICE_ID_ADDRESS=1; 
 void pylonHV_message_0x4210(bool extend);
 void pylonHV_message_0x4220(bool extend);
 void pylonHV_message_0x4230(bool extend);
@@ -27,12 +25,12 @@ void pylonHV_message_0x4290(bool extend);
 void pylonHV_message_0x42A0(bool extend);
 
 void pylonHV_message_0x7320(bool extend);
-void pylonHV_message_0x7330(bool extend);
+void pylonHV_message_0x7330_0x7340(bool extend);
 void pylonHV_message_0x7310(bool extend);
-void pylonHV_message_0x7340(bool extend);
 
 void pylonHV_send_message_info(bool extend);
 void pylonHV_send_message_status(bool extend);
+
 
 extern uint8_t TotalNumberOfCells();
 extern Rules rules;
