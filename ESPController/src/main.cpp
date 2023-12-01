@@ -2824,7 +2824,7 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
       }
     }
 
-    if(mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONTECH_HV){
+    if(mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONFORCEH2){
       // Delay 1 second
       // wait to query Inverter on task canbus_rx
       vTaskDelay(pdMS_TO_TICKS(5000));  //2seg
@@ -2878,7 +2878,7 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
       }
 
       //BOTANETA: wait request from inverter
-      if(mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONTECH_HV){
+      if(mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONFORCEH2){
         switch(message.identifier){
           case 0x8200:
           case 0x620: //Command control
