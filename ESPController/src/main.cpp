@@ -1195,7 +1195,7 @@ void ProcessRules()
     }
   }
 
-  //BOTANETA control comunicación con el inversor
+  //BOTANETA inverter communications error...
   if(canbus_no_request_messages_count > 0){
     rules.setRuleStatus(Rule::CANcomError, true);
   }else{
@@ -2127,6 +2127,8 @@ bool CurrentMonitorResetDailyAmpHourCounters()
     ESP_LOGI(TAG, "Reset daily Ah counter");
     if (mysettings.currentMonitoringDevice == CurrentMonitorDevice::DIYBMS_CURRENT_MON_MODBUS)
     {
+      mysettings.numberofbatterycycles += currentMonitor.modbus.daily_milliamphour_out / mysettings.currentMonitoring_batterycapacity;
+      saveConfiguration();
       currentMon_ResetDailyAmpHourCounters();
       return true;
     }
@@ -2634,9 +2636,8 @@ void ProcessDIYBMSCurrentMonitorInternal()
   currentMonitor.modbus.shuntmillivolt = currentmon_internal.calc_shuntmillivolt();
   currentMonitor.modbus.shuntcal = currentmon_internal.calc_shuntcalibration();
   currentMonitor.modbus.modelnumber = 0x229;
-  currentMonitor.modbus.power = currentmon_internal.calc_power();
+  currentMonitor.modbus.power = currentmon_internal.calc_power() * mysettings.currentMonitoring_voltage_divider_vbus;;
   currentMonitor.modbus.overpowerlimit = currentmon_internal.calc_overpowerlimit();
-  //BOTANETA apply voltage divider
   currentMonitor.modbus.voltage = currentmon_internal.calc_voltage() * mysettings.currentMonitoring_voltage_divider_vbus;
   currentMonitor.modbus.current = currentmon_internal.calc_current();
   currentMonitor.modbus.shuntresistance = currentmon_internal.calc_shuntresistance();
@@ -2880,9 +2881,25 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
       if(mysettings.canbusprotocol == CanBusProtocolEmulation::CANBUS_PYLONFORCEH2){
         switch(message.identifier){
           case 0x8200:
-          case 0x620: //Command control
-            
+          case 0x620: // Sleep/Awake Command control
+            {
+              canbus_no_request_messages_count=0;  //BOTANETA reset count
+              bool extd=message.extd; 
+              if(message.data[0]==0x55); //enter sleep status
+              if(message.data[0]==0xAA); //wakeup
+            }
           break;
+
+          case 0x8210:
+          case 0x621:  // Charge/Discharge Command control
+            {
+              canbus_no_request_messages_count=0;  //BOTANETA reset count
+              bool extd=message.extd; 
+              if(message.data[0]==0xAA); //Force Charge, (close batt-relay) when the batt is in under-voltage protection, the realy is open  
+              if(message.data[1]==0xAA); //Force Discharge, (close batt-relay) when the batt is in over-voltage protection, the realy is open 
+            }
+          break;
+
           case 0x4200:
           case 0x420: //request from inverter
             {

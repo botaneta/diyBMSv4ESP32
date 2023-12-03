@@ -1357,6 +1357,13 @@ esp_err_t ha_handler(httpd_req_t *req)
                          rules.IsChargeAllowed(&mysettings) ? 1 : 0,
                          rules.IsDischargeAllowed(&mysettings) ? 1 : 0);
 
+  for(int i=0; i <  mysettings.totalNumberOfSeriesModules; i++){
+    bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused,
+                         R"(,"cell_%u":%u)", i, cmi[i].voltagemV);
+  }
+
+
+
   bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, "}");
   return httpd_resp_send(req, httpbuf, bufferused);
 }
