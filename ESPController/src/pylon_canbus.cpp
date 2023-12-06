@@ -444,6 +444,7 @@ void pylonHV_message_0x4220(bool extend){
     
     if(rules.numberOfBalancingModules > 0 && mysettings.stopchargebalance == true){
       // Balancing is active, so stop charging (do nothing here)
+      //value of current is 0.0A=> 30000
     }else{
       // Default - normal behaviour (apply charging voltage and current)
       charge_voltage = rules.DynamicChargeVoltage();

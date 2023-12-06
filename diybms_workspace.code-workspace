@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "ESP32BoardTest"
+		},
+		{
+			"path": "STM32All-In-One"
 		}
 	],
 	"settings": {
