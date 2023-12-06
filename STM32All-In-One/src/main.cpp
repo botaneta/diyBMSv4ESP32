@@ -37,6 +37,8 @@ extern "C"
   void SystemClock_Config(void);
 }
 
+#include <IWatchdog.h>
+
 #include "SPI.h"
 #include <SerialEncoder.h>
 #include "packet_processor.h"
@@ -495,6 +497,9 @@ void configurePins()
 void setup()
 {
   SystemClock_Config();
+
+  // Initialize the IWDG with 4 seconds timeout.  This would cause a CPU reset if the IWDG timer is not reloaded in approximately 4 seconds.
+  IWatchdog.begin(4000000);
 
   configurePins();
   DisableThermistorPower();
@@ -970,6 +975,8 @@ void ServiceSerialPort()
 
 void loop()
 {
+  // make sure the code in this loop is executed in less than 2 seconds to leave 50% headroom for the timer reload.
+  IWatchdog.reload();
 
   // Temperature sensor readings...
   EnableThermistorPower();
@@ -1023,7 +1030,8 @@ void loop()
   DecimateRawADCCellVoltage(rawADC, celldata, number_of_active_cells);
 
   auto highestTemp = max(celldata.at(0).getInternalTemperature(), celldata.at(1).getInternalTemperature());
-
+  highestTemp = max (highestTemp , celldata.at(2).getInternalTemperature());
+  
   // If fan timer has expired, switch off FAN
   // This has the side effect of the fan switching off and on (not physically noticable) should the temperature still be too hot.
   auto millis = HAL_GetTick();
