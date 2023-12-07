@@ -867,7 +867,7 @@ function queryBMS() {
                 $("#amphin .v").html((parseFloat(data.mahin) / 1000).toFixed(3));
                 $("#damphout .v").html((parseFloat(data.dmahout) / 1000).toFixed(3));
                 $("#damphin .v").html((parseFloat(data.dmahin) / 1000).toFixed(3));
-                $("#cyclesbatt .v").html(parseInt(data.cyclesbatt));
+                $("#cyclesbatt .v").html(parseFloat(data.cyclesbatt).toFixed(2));
                 if (data.time100 > 0) {
                     $("#time100 .v").html(secondsToHms(data.time100));
                 } else { $("#time100 .v").html("&infin;"); }

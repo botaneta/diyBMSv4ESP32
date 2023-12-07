@@ -2676,11 +2676,10 @@ static const char *ESP32_TWAI_STATUS_STRINGS[] = {
     "RECOVERY UNDERWAY"      // CAN_STATE_RECOVERING
 };
 
-void _send_canbus_message(const uint32_t identifier, const uint8_t *buffer, const uint8_t length, const uint32_t flags)
+void send_canbus_message(const uint32_t identifier, const uint8_t *buffer, const uint8_t length)
 {
   twai_message_t message;
   message.identifier = identifier;
-  message.flags = flags; //BOTANETA que usar flags o id_can?
   message.flags = TWAI_MSG_FLAG_NONE;
   if(identifier > 0x7FF)message.flags = TWAI_MSG_FLAG_EXTD;
   message.data_length_code = length;
@@ -2735,15 +2734,6 @@ void _send_canbus_message(const uint32_t identifier, const uint8_t *buffer, cons
 }
 
 
-//BOTANETA hacer algo aquí
-void send_canbus_message(const uint32_t identifier, const uint8_t *buffer, const uint8_t length)
-{
-  _send_canbus_message(identifier, buffer, length, TWAI_MSG_FLAG_NONE);
-}
-void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, const uint8_t length)
-{
-  _send_canbus_message(identifier, buffer, length, TWAI_MSG_FLAG_EXTD);
-}
 
 [[noreturn]] void canbus_tx(void *)
 {
@@ -2905,8 +2895,8 @@ void send_ext_canbus_message(const uint32_t identifier, const uint8_t *buffer, c
             {
               canbus_no_request_messages_count=0;  //BOTANETA reset count
               bool extd=message.extd;
-              if(message.data[0]==0x00); pylonHV_send_message_info(extd);//send status info
-              if(message.data[0]==0x02); pylonHV_send_message_status(extd);//send hardware info
+              if(message.data[0]==0x00) pylonHV_send_message_info(extd);//send status info
+              if(message.data[0]==0x02) pylonHV_send_message_status(extd);//send hardware info
             }
           break;
         }

@@ -425,8 +425,8 @@ void pylonHV_message_0x4210(bool extend){
   uint32_t address=0x421;
   if(extend)address=0x4210 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, data, 8);
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
 }
 
 /* Charge voltage, discharge voltage, charge current, discharge current */
@@ -472,8 +472,8 @@ void pylonHV_message_0x4220(bool extend){
   uint32_t address=0x422;
   if(extend)address=0x4220 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, data, 8);
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
 }
 
 
@@ -497,8 +497,8 @@ void pylonHV_message_0x4230(bool extend){
   uint32_t address=0x423;
   if(extend)address=0x4230 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, data, 8);
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
 }
 
 /* Temperature and id from cell maximun and minimun */
@@ -531,9 +531,9 @@ void pylonHV_message_0x4240(bool extend){
   uint32_t address=0x424;
   if(extend)address=0x4240 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, (uint8_t *)&data, sizeof(data4240));
-  uint8_t * dat = (uint8_t *)&data;
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, dat[0], dat[1], dat[2], dat[3], dat[4], dat[5], dat[6], dat[7] );
+  //uint8_t * dat = (uint8_t *)&data;
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //               address, dat[0], dat[1], dat[2], dat[3], dat[4], dat[5], dat[6], dat[7] );
 }
 
 /* Status, nº_cycles, error, alarm, protection*/
@@ -551,7 +551,7 @@ void pylonHV_message_0x4250(bool extend){
   if(rules.getChargingMode() == ChargingMode::floating || currentMonitor.modbus.current == 0.0 )status=0x03;
   if(currentMonitor.modbus.current < 0.0)status=0x02;
 
-  uint16_t cycles=(currentMonitor.modbus.milliamphour_out / 1000) / mysettings.currentMonitoring_batterycapacity;
+  uint16_t cycles=mysettings.numberofbatterycycles/1000u;
 
   uint8_t error=0x00;
   //b7 other error
@@ -634,8 +634,8 @@ void pylonHV_message_0x4250(bool extend){
   uint32_t address=0x425;
   if(extend)address=0x4250 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, data, 8);
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
 }
 
 
@@ -656,8 +656,8 @@ void pylonHV_message_0x4260(bool extend){
   uint32_t address=0x426;
   if(extend)address=0x4260 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, data, 8);
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
 }
 
 /* Module max/min temperature id_max/id_min */
@@ -690,9 +690,9 @@ void pylonHV_message_0x4270(bool extend){
   uint32_t address=0x427;
   if(extend)address=0x4270 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, (uint8_t *)&data, sizeof(data4270));
-  uint8_t * dat = (uint8_t *)&data;
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, dat[0], dat[1], dat[2], dat[3], dat[4], dat[5], dat[6], dat[7] );
+  //uint8_t * dat = (uint8_t *)&data;
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, dat[0], dat[1], dat[2], dat[3], dat[4], dat[5], dat[6], dat[7] );
 }
 
 /* Charge Discharge forbiden mark */
@@ -706,8 +706,8 @@ void pylonHV_message_0x4280(bool extend){
   uint32_t address=0x428;
   if(extend)address=0x4280 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, data, 8);
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
 }
 
 /* System error list */
@@ -727,8 +727,8 @@ void pylonHV_message_0x4290(bool extend){
   uint32_t address=0x429;
   if(extend)address=0x4290 + mysettings.canbus_equipment_addr;
   send_canbus_message(address, data, 8);
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
 }
 
 /* Terminal max/min temperature id_terminal*/
@@ -739,14 +739,13 @@ void pylonHV_message_0x42A0(bool extend){
     uint16_t id_terminal_max_temp=0;
     uint16_t id_terminal_min_temp=0;
   };
-  data42A0 data42a;
+  data42A0 data;
   uint32_t address=0x42A;
   if(extend)address=0x42A0 + mysettings.canbus_equipment_addr;
-  send_canbus_message(address,(uint8_t *)&data42a, sizeof(data42A0));
-  uint8_t data[8];
-  memcpy(&data, &data42a, 8);
-  ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
-                  address, ((uint8_t *)&data42a)[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7] );
+  send_canbus_message(address,(uint8_t *)&data, sizeof(data42A0));
+  //uint8_t * dat = (uint8_t *)&data;
+  //ESP_LOGI("PYLON_HV", "Address:%04x::%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", 
+  //                address, dat[0], dat[1], dat[2], dat[3], dat[4], dat[5], dat[6], dat[7] );
 }
 
 void pylonHV_send_message_status(bool extend){

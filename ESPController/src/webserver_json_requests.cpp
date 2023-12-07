@@ -1007,7 +1007,7 @@ esp_err_t content_handler_monitor2(httpd_req_t *req)
 
     bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, R"(,"time100":%u,"time20":%u,"time10":%u)", time100, time20, time10);
 
-    bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, R"(,"cyclesbatt":%u)", (mysettings.numberofbatterycycles/1000) );
+    bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, R"(,"cyclesbatt":%.2f)", (float)mysettings.numberofbatterycycles/1000.0f);
 
     bufferused += snprintf(&httpbuf[bufferused], BUFSIZE - bufferused, "}");
   }
