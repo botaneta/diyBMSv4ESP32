@@ -407,7 +407,7 @@ void pylonHV_message_0x4210(bool extend){
 
   // Temperature 0.1 C using external temperature sensor
   if (rules.moduleHasExternalTempSensor){
-    temperature += rules.highestExternalTemp;
+    temperature += rules.highestExternalTemp * 10;
   }else{
     // No external temp sensors
     temperature += 250; //default 25.0ºC
