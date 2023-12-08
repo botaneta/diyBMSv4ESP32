@@ -1319,7 +1319,7 @@ esp_err_t ha_handler(httpd_req_t *req)
     ESP_LOGE(TAG, "Unauthorized ApiKey=%s", buffer);
     return httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, nullptr);
   }
-
+  
   int bufferused = 0;
 
   // Output the first batch of settings/parameters/values

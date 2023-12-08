@@ -2895,8 +2895,8 @@ void send_canbus_message(const uint32_t identifier, const uint8_t *buffer, const
             {
               canbus_no_request_messages_count=0;  //BOTANETA reset count
               bool extd=message.extd;
-              if(message.data[0]==0x00) pylonHV_send_message_info(extd);//send status info
-              if(message.data[0]==0x02) pylonHV_send_message_status(extd);//send hardware info
+              if(message.data[0]==0x02) pylonHV_send_message_info(extd);//send hardware info
+              if(message.data[0]==0x00) pylonHV_send_message_status(extd);//send status info
             }
           break;
         }

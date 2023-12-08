@@ -1030,7 +1030,7 @@ void loop()
   DecimateRawADCCellVoltage(rawADC, celldata, number_of_active_cells);
 
   auto highestTemp = max(celldata.at(0).getInternalTemperature(), celldata.at(1).getInternalTemperature());
-  highestTemp = max (highestTemp , celldata.at(2).getInternalTemperature());
+  highestTemp = max(highestTemp , celldata.at(2).getInternalTemperature());
   
   // If fan timer has expired, switch off FAN
   // This has the side effect of the fan switching off and on (not physically noticable) should the temperature still be too hot.
