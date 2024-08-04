@@ -2143,7 +2143,7 @@ bool CurrentMonitorResetDailyAmpHourCounters()
   return false;
 }
 
-void CurrentMonitorSetBasicSettings(uint16_t shuntmv, uint16_t shuntmaxcur, uint16_t batterycapacity, float fullchargevolt, float tailcurrent, float chargeefficiency)
+void CurrentMonitorSetBasicSettings(uint16_t shuntmv, uint16_t shuntmaxcur, uint16_t batterycapacity, float fullchargevolt, float vbus_divider, float tailcurrent, float chargeefficiency)
 {
 
   if (mysettings.currentMonitoringDevice == CurrentMonitorDevice::DIYBMS_CURRENT_MON_MODBUS)
@@ -2159,6 +2159,7 @@ void CurrentMonitorSetBasicSettings(uint16_t shuntmv, uint16_t shuntmaxcur, uint
     mysettings.currentMonitoring_fullchargevolt = (uint16_t)(100.0 * fullchargevolt);
     mysettings.currentMonitoring_tailcurrent = (uint16_t)(100.0 * tailcurrent);
     mysettings.currentMonitoring_chargeefficiency = (uint16_t)(100.0 * chargeefficiency);
+    mysettings.currentMonitoring_voltage_divider_vbus = vbus_divider;
     // Reset stored shuntcal to zero to allow automatic calibration
     // this is updated by the CurrentMonitorSetAdvancedSettings call
     mysettings.currentMonitoring_shuntcal = 0;
@@ -2172,6 +2173,7 @@ void CurrentMonitorSetBasicSettings(uint16_t shuntmv, uint16_t shuntmaxcur, uint
           mysettings.currentMonitoring_shuntmaxcur,
           mysettings.currentMonitoring_batterycapacity,
           mysettings.currentMonitoring_fullchargevolt,
+          mysettings.currentMonitoring_voltage_divider_vbus,
           mysettings.currentMonitoring_tailcurrent,
           mysettings.currentMonitoring_chargeefficiency,
           mysettings.currentMonitoring_shuntcal,
@@ -2209,6 +2211,7 @@ void CurrentMonitorSetRelaySettingsInternal(currentmonitoring_struct newvalues)
         mysettings.currentMonitoring_shuntmaxcur,
         mysettings.currentMonitoring_batterycapacity,
         mysettings.currentMonitoring_fullchargevolt,
+        mysettings.currentMonitoring_voltage_divider_vbus,
         mysettings.currentMonitoring_tailcurrent,
         mysettings.currentMonitoring_chargeefficiency,
         mysettings.currentMonitoring_shuntcal,
@@ -2465,6 +2468,7 @@ void CurrentMonitorSetAdvancedSettings(currentmonitoring_struct newvalues)
           mysettings.currentMonitoring_shuntmaxcur,
           mysettings.currentMonitoring_batterycapacity,
           mysettings.currentMonitoring_fullchargevolt,
+          mysettings.currentMonitoring_voltage_divider_vbus,
           mysettings.currentMonitoring_tailcurrent,
           mysettings.currentMonitoring_chargeefficiency,
           mysettings.currentMonitoring_shuntcal,
@@ -2636,9 +2640,9 @@ void ProcessDIYBMSCurrentMonitorInternal()
   currentMonitor.modbus.shuntmillivolt = currentmon_internal.calc_shuntmillivolt();
   currentMonitor.modbus.shuntcal = currentmon_internal.calc_shuntcalibration();
   currentMonitor.modbus.modelnumber = 0x229;
-  currentMonitor.modbus.power = currentmon_internal.calc_power() * mysettings.currentMonitoring_voltage_divider_vbus;;
+  currentMonitor.modbus.power = currentmon_internal.calc_power();
   currentMonitor.modbus.overpowerlimit = currentmon_internal.calc_overpowerlimit();
-  currentMonitor.modbus.voltage = currentmon_internal.calc_voltage() * mysettings.currentMonitoring_voltage_divider_vbus;
+  currentMonitor.modbus.voltage = currentmon_internal.calc_voltage();
   currentMonitor.modbus.current = currentmon_internal.calc_current();
   currentMonitor.modbus.shuntresistance = currentmon_internal.calc_shuntresistance();
   currentMonitor.modbus.tailcurrentamps = currentmon_internal.calc_tailcurrentamps();
@@ -3925,6 +3929,7 @@ ESP32 Chip model = %u, Rev %u, Cores=%u, Features=%u)",
           mysettings.currentMonitoring_shuntmaxcur,
           mysettings.currentMonitoring_batterycapacity,
           mysettings.currentMonitoring_fullchargevolt,
+          mysettings.currentMonitoring_voltage_divider_vbus,
           mysettings.currentMonitoring_tailcurrent,
           mysettings.currentMonitoring_chargeefficiency,
           mysettings.currentMonitoring_shuntcal,

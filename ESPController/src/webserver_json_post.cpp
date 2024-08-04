@@ -798,8 +798,8 @@ esp_err_t post_savecmbasic_json_handler(httpd_req_t *req, bool urlEncoded)
         if (GetKeyValue(httpbuf, "shuntmv", &shuntmv, urlEncoded))
         {
             //BOTANETA save parameter voltage divider vbus
-            mysettings.currentMonitoring_voltage_divider_vbus=1.0f;
-            if(GetKeyValue(httpbuf, "cm_voltage_divider_vbus", &mysettings.currentMonitoring_voltage_divider_vbus, urlEncoded))
+            float voltage_divider_vbus=1.0f;
+            if(GetKeyValue(httpbuf, "cm_voltage_divider_vbus", &voltage_divider_vbus, urlEncoded))
             {
                 uint16_t batterycapacity = 0;
                 if (GetKeyValue(httpbuf, "cmbatterycapacity", &batterycapacity, urlEncoded))
@@ -813,7 +813,7 @@ esp_err_t post_savecmbasic_json_handler(httpd_req_t *req, bool urlEncoded)
                             float chargeefficiency = 0;
                             if (GetKeyValue(httpbuf, "cmchargeefficiency", &chargeefficiency, urlEncoded))
                             {
-                                CurrentMonitorSetBasicSettings(shuntmv, shuntmaxcur, batterycapacity, fullchargevolt, tailcurrent, chargeefficiency);
+                                CurrentMonitorSetBasicSettings(shuntmv, shuntmaxcur, batterycapacity, fullchargevolt, voltage_divider_vbus, tailcurrent, chargeefficiency);
                                 SaveConfiguration(&mysettings);
                                 return SendSuccess(req);
                             }

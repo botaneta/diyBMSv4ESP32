@@ -234,7 +234,7 @@ float CurrentMonitorINA229::BusVoltage()
     // ESP_LOGD(TAG, "busVoltage mV=%u", busVoltage_mV);
 
     //  Return VOLTS
-    return (float)busVoltage_mV / (float)1000.0;
+    return ( (float)busVoltage_mV / (float)1000.0 ) * registers.vbus_divider;
 }
 
 // Read a 20 bit (3 byte) TWOS COMPLIMENT integer from an INA register
@@ -442,6 +442,7 @@ bool CurrentMonitorINA229::Configure(uint16_t shuntmv,
                                      uint16_t shuntmaxcur,
                                      uint16_t batterycapacity,
                                      uint16_t fullchargevolt,
+                                     uint16_t vbus_divider,
                                      uint16_t tailcurrent,
                                      uint16_t chargeefficiency,
                                      uint16_t shuntcal,
@@ -457,6 +458,7 @@ bool CurrentMonitorINA229::Configure(uint16_t shuntmv,
     registers.shunt_millivolt = shuntmv;
     registers.shunt_max_current = shuntmaxcur;
     registers.fully_charged_voltage = fullchargevolt / 100.0;
+    registers.vbus_divider = vbus_divider;
     registers.batterycapacity_amphour = batterycapacity;
     registers.tail_current_amps = tailcurrent / 100.0;
     registers.charge_efficiency_factor = chargeefficiency / 100.0;

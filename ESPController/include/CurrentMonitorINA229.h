@@ -70,6 +70,7 @@ class CurrentMonitorINA229
         uint16_t shunt_millivolt;
         uint16_t batterycapacity_amphour;
         float fully_charged_voltage;
+        float vbus_divider;
         float tail_current_amps;
         float charge_efficiency_factor;
     };
@@ -166,6 +167,7 @@ public:
         // Defaults for battery capacity/voltages
         registers.batterycapacity_amphour = 280;
         registers.fully_charged_voltage = 3.50F * 16.0F;
+        registers.vbus_divider = 1.0F;
         registers.tail_current_amps = 20.0F;
         registers.charge_efficiency_factor = 99.5F;
 
@@ -205,6 +207,7 @@ public:
                    uint16_t shuntmaxcur,
                    uint16_t batterycapacity,
                    uint16_t fullchargevolt,
+                   uint16_t vbus_divider,
                    uint16_t tailcurrent,
                    uint16_t chargeefficiency,
                    uint16_t shuntcal,
@@ -372,7 +375,7 @@ private:
     float Power()
     {
         // POWER Power [W] = 3.2 x CURRENT_LSB x POWER
-        return (float)spi_readUint24(INA_REGISTER::POWER) * (float)3.2 * registers.CURRENT_LSB;
+        return (float)spi_readUint24(INA_REGISTER::POWER) * (float)3.2 * registers.CURRENT_LSB * registers.vbus_divider;
     }
 
     // The INA228 device has an internal temperature sensor which can measure die temperature from –40 °C to +125°C.
